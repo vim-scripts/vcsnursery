@@ -1,0 +1,14 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=1898
+
+Intro:
+This package contains additional backends (Mercurial and sccs currently) for vcscommand vimscript#90 (thanks for the excellent package!). While talking Bob about including them to vcscommand, he suggested to create additional package, which would contain new and possibly buggy backends. After some soak time, they might be moved to vcscommand itself. So here we go.
+
+Current status:
+Mercurial: Full support + annotate syntax
+SCCS: Limited support (full is not possible, see below) and annotate syntax
+
+Sccs backend does not have Add, Delete, Lock, Revert, Unlock and Update. There's enough for VCSVimDiff, VCSAnnotate and VCSLog. The reason is, that sccs can be used on it's own, through TeamWare and through other wrappers like Sun internal wx. It would be possible to write plugin to handle them all, but I'm not convinced that it's worth the hassle (make me do it :)).
+
+Contact:
+see my account info
+
