@@ -3,7 +3,7 @@
 " Mercurial extension for VCSCommand. This extension is based on svn extension
 " to VCSCommand made by Bob Hiestand <bob.hiestand@gmail.com>
 "
-" Version:       1
+" Version:       2
 " Maintainer:    Vladimir Marek <vlmarek@volny.cz>
 " License:
 " Copyright (c) 2007 Vladimir Marek
@@ -110,7 +110,7 @@ function! s:DoCommand(binary, cmd, cmdName, statusText)
   try
     if VCSCommandGetVCSType(expand('%')) == 'SCCS'
       let fullCmd = VCSCommandGetOption('VCSCommandSCCSPath', '') . a:binary . ' ' . a:cmd
-      return VCSCommandDoCommand(fullCmd, a:cmdName, a:statusText)
+      return VCSCommandDoCommand(fullCmd, a:cmdName, a:statusText, {})
     else
       throw 'No suitable plugin'
     endif
@@ -153,18 +153,19 @@ function! s:sccsFunctions.Annotate(argList)
     if len(a:argList) == 0
       if &filetype == 'SCCSAnnotate'
         " Perform annotation of the version indicated by the current line.
-        let revision = matchstr(getline('.'),'\v^\s*\zs\d+\.\d+')
+        let l:revision = matchstr(getline('.'),'\v^\s*\zs\d+\.\d+')
       else
-        let revision=VCSCommandGetRevision()
-        if revision == ''
+        let l:bufferinfo=s:sccsFunctions.GetBufferInfo()
+        let l:revision=l:bufferinfo[0]
+        if l:revision == ''
           throw 'vcssccs: Unable to obtain version information.'
         endif
       endif
     else
-      let revision=a:argList[0]
+      let l:revision=a:argList[0]
     endif
 
-    let resultBuffer=s:DoCommand('sccs', 'get -p -m -s -r' . revision . ' "'. realFileName . '"', 'annotate', revision) 
+    let resultBuffer=s:DoCommand('sccs', 'get -p -m -s -r' . l:revision, 'annotate', l:revision) 
     if resultBuffer > 0
       set filetype=SCCSAnnotate
     endif
@@ -176,13 +177,10 @@ endfunction
 
 " Function: s:sccsFunctions.Commit(argList) {{{2
 function! s:sccsFunctions.Commit(argList)
-"  g/^VCS:/d
-"  %s/\n/\\\\/g
-
 "  This commits only first line :(
 "  return s:DoCommand("sccs", "deledit <" . a:argList[0] , 'commit', '')
 
-" This seems to work ok, but may depend on your shell installed ...
+" This seems to work ok, but may depend on your shell ...
   return s:DoCommand("sccs", "deledit -y\"$(cat " . a:argList[0] .")\"" , 'commit', '')
 endfunction
 
@@ -191,8 +189,8 @@ function! s:sccsFunctions.Delete(argList)
   echoerr "vcssccs: VCSDelete not implemented"
 endfunction
 
-" 0 args - current file
-" 1 args - current file revision REV
+" 0 args - current file vs. last revision
+" 1 args - current file vs. revision REV
 " 2 args - current file revisions REV1 & REV2
 " Function: s:sccsFunctions.Diff(argList) {{{2
 function! s:sccsFunctions.Diff(argList)
@@ -201,8 +199,10 @@ function! s:sccsFunctions.Diff(argList)
     let revOptions = 'diffs -r' . a:argList[0] . ' -u'
     let caption = '(' . a:argList[0] . ' : working copy)'
   elseif len(a:argList) == 2
+    let l:fileName = resolve(bufname(VCSCommandGetOriginalBuffer(bufnr('%'))))
+    let l:fileName = fnamemodify(l:fileName, ':p:h') . '/SCCS/s.'
     let command = 'sccsdiff'
-    let revOptions = ' -r ' . a:argList[0] . ' -r ' . a:argList[1] . ' -u'
+    let revOptions = ' -r' . a:argList[0] . ' -r' . a:argList[1] . ' -u '.l:fileName.'<VCSCOMMANDFILE>'
     let caption = '(' . a:argList[0] . ' : ' . a:argList[1] . ')'
   else
     let command = 'sccs'

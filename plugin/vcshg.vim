@@ -102,7 +102,7 @@ function! s:DoCommand(cmd, cmdName, statusText)
   try
     if VCSCommandGetVCSType(expand('%')) == 'Mercurial'
       let fullCmd = VCSCommandGetOption('VCSCommandHGExec', 'hg') . ' ' . a:cmd
-      return VCSCommandDoCommand(fullCmd, a:cmdName, a:statusText)
+      return VCSCommandDoCommand(fullCmd, a:cmdName, a:statusText, {})
     else
       throw 'No suitable plugin'
     endif
