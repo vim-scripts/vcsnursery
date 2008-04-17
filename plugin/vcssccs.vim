@@ -155,8 +155,10 @@ function! s:sccsFunctions.Annotate(argList)
         " Perform annotation of the version indicated by the current line.
         let l:revision = matchstr(getline('.'),'\v^\s*\zs\d+\.\d+')
       else
-        let l:bufferinfo=s:sccsFunctions.GetBufferInfo()
-        let l:revision=l:bufferinfo[0]
+        if !exists('b:VCSCommandBufferInfo')
+          call VCSCommandEnableBufferSetup()
+        endif
+        let l:revision = b:VCSCommandBufferInfo[0]
         if l:revision == ''
           throw 'vcssccs: Unable to obtain version information.'
         endif
