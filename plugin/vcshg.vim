@@ -145,7 +145,8 @@ function! s:hgFunctions.Annotate(argList)
         " Perform annotation of the version indicated by the current line.
         let revision = matchstr(getline('.'),'\v^\s*\S*\s*\zs\d+')
       else
-        let revision=VCSCommandGetRevision()
+        let l:bufferinfo=s:hgFunctions.GetBufferInfo()
+        let l:revision=l:bufferinfo[0]
         if revision == ''
           throw 'Unable to obtain version information.'
         elseif revision == 'Unknown'        " XXX
